@@ -1,13 +1,13 @@
         .module ch376-ccp
         .include 'z1013.s'
+
+ERR_INIT_FAILED                 = 0x01
+ERR_MOUNT_FAILED                = 0x02
 ;
 ;       imports
 ;
-        .globl  uart_init
-        .globl  uart_send9600
-        .globl  uart_recv9600
-        ;.globl  uart_putstr
-        ;.globl  putchar
+        .globl  ch376_module_init
+        .globl  ch376_module_mount
 ;
 ;       exports
 ;
@@ -19,41 +19,23 @@
 main:
         ld      a,#0x0c
         UP_OUTCH
-        UP_PRST7 ^/Hobi's CH376-CCP (C) 2020 @19.2K\r/
-        call    uart_init
-        call    ch376_set_baud_rate
+        UP_PRST7 ^/Hobi's CH376-CCP@19.2K (C) 2020\r/
+        call    ch376_module_init
+        ld      l,a
+        ld      a,#ERR_INIT_FAILED
+        jp      c,err_handler
+        call    ch376_module_mount
+        ld      l,a
+        ld      a,#ERR_MOUNT_FAILED
+        jp      c,err_handler
+        UP_PRST7 ^/Module OK.\r/
         ret
 
-
-CMD_SET_BAUDRATE = 0x02
-CMD_CHECK_EXIST  = 0x06
-
-CMD_RET_SUCCESS  = 0x51
-
-ch376_set_baud_rate:
-        ld      e,#0x57
-        call    uart_send9600
-        ld      e,#0xAB
-        call    uart_send9600
-        ld      e,#CMD_CHECK_EXIST
-        call    uart_send9600
-        ld      e,#0x01
-        call    uart_send9600
-        call    uart_recv9600 ; response is 0xff-0x01=0xfe
-        ld      a,e
+err_handler:
+        push    af
+        UP_PRST7 ^/Error:/
+        pop     af
         UP_OUTHX
-        ld      e,#0x57
-        call    uart_send9600
-        ld      e,#0xAB
-        call    uart_send9600
-        ld      e,#CMD_SET_BAUDRATE
-        call    uart_send9600
-        ld      e,#0x02
-        call    uart_send9600
-        ld      e,#0xd9
-        call    uart_send9600
-        call    uart_recv ; response is 0x51 CMD_RET_SUCCESS
-        ld      a,e
+        ld      a,l
         UP_OUTHX
-
-        ret
+        jp      exit

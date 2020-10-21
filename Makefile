@@ -5,7 +5,14 @@ OBJCOPY = sdobjcopy
 SDAS_OPT=-plowgff
 SDLD_OPT=-mwxiu
 
-OBJECTS = ch376-ccp uart_init uart_send9600 uart_recv9600 uart_send uart_recv
+OBJECTS = ch376-ccp uart_init uart_send9600 uart_recv9600 uart_send uart_recv mdelay exit\
+ch376_module_init \
+ch376_module_mount \
+ch376_module_set_baud_rate \
+ch376_cmd_check_exists \
+ch376_dev_send_command_with_result \
+
+
 OUT=ch376-ccp
 
 #uart_init uart_send uart_recv uart_putstr
